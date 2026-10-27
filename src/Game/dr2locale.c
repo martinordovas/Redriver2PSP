@@ -126,6 +126,14 @@ int InitStringLanguage(char *filename, int mission)
 	int size;
 	
 	FILE* fp = fopen(filename, "rb");
+	if (!fp && strncmp(filename, "data/", 5) == 0)
+	{
+		fp = fopen(filename + 5, "rb");
+	}
+	if (!fp && strstr(filename, "LANG"))
+	{
+		fp = fopen(strstr(filename, "LANG"), "rb");
+	}
 	if (!fp)
 	{
 		printError("ERROR! Cannot open language file '%s'!\n", filename);

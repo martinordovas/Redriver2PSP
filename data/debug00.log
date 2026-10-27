@@ -1,0 +1,21 @@
+jPSXdec: PSX media decoder (non-commercial) v1.05 (beta)
+Linux 7.2.6-1-cachyos
+Java 25.0.4.1
+2026-10-27 18:58:25
+18:58 jpsxdec.i18n.FeedbackStream INFO: Video format: AVI: Comprimido (MJPG)
+18:58 jpsxdec.i18n.FeedbackStream INFO: Dimensions: 320x176
+18:58 jpsxdec.i18n.FeedbackStream INFO: Disc speed: 2x (30 fps)
+18:58 jpsxdec.i18n.FeedbackStream INFO: With audio item(s):
+18:58 jpsxdec.i18n.FeedbackStream INFO: #:392|ID:DRIVER2/FMV/0/RENDER0.STR[0.0]|Sectors:67077-77653|Type:XA|File:1|Channel:1|Stereo?:Yes|Samples/Sec:18900|Bits/Sample:4|Sector stride:16|Disc speed:2x
+18:58 jpsxdec.i18n.FeedbackStream INFO: Emulate PSX audio/video sync: No
+18:58 jpsxdec.i18n.FeedbackStream INFO: Saving as: DRIVER2/FMV/0/RENDER0.STR[0].avi
+18:58 guardar INFO: Filename:./install/Driver2CD2.bin|Sector size:2352|Sector count:256319|First sector offset:0
+18:58 guardar INFO: #:391|ID:DRIVER2/FMV/0/RENDER0.STR[0]|Sectors:67062-77646|Type:Video|Dimensions:320x176|Frame Count:2117|Sector Frames:67062-77642|Sectors/Frame:5/1|1st frame end sector:4|Disc Speed:2|Header Frames:1-2117
+18:58 guardar INFO: Video format: AVI: Comprimido (MJPG)
+18:58 guardar INFO: Dimensions: 320x176
+18:58 guardar INFO: Disc speed: 2x (30 fps)
+18:58 guardar INFO: With audio item(s):
+18:58 guardar INFO: #:392|ID:DRIVER2/FMV/0/RENDER0.STR[0.0]|Sectors:67077-77653|Type:XA|File:1|Channel:1|Stereo?:Yes|Samples/Sec:18900|Bits/Sample:4|Sector stride:16|Disc speed:2x
+18:58 guardar INFO: Emulate PSX audio/video sync: No
+18:58 guardar INFO: Saving as: DRIVER2/FMV/0/RENDER0.STR[0].avi
+18:58 jpsxdec.modules.video.save.VDP INFO: Bitstream format: BitStreamUncompressor_STRv3

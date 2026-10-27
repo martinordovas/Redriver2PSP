@@ -611,6 +611,18 @@ int OpenBinaryImageFile()
 		// open Binary
 		g_imageFile.fp = fopen(g_cdImageBinaryFileName, "rb");
 
+		if (!g_imageFile.fp && strncmp(g_cdImageBinaryFileName, "data/", 5) == 0)
+			g_imageFile.fp = fopen(g_cdImageBinaryFileName + 5, "rb");
+
+		if (!g_imageFile.fp)
+			g_imageFile.fp = fopen("data/install/Driver2CD1.bin", "rb");
+
+		if (!g_imageFile.fp)
+			g_imageFile.fp = fopen("install/Driver2CD1.bin", "rb");
+
+		if (!g_imageFile.fp)
+			g_imageFile.fp = fopen("Driver2CD1.bin", "rb");
+
 		if (!g_imageFile.fp)
 		{
 			eprinterr("CD image '%s' not found.\n", g_cdImageBinaryFileName);

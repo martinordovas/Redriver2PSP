@@ -29,6 +29,7 @@ extern "C" {
 #endif //def WIN32
 
 #if defined(PSP) || defined(__PSP__)
+#include <psputils.h>
 #define USE_PBO                 0
 #define USE_OFFSCREEN_BLIT      0
 #define USE_FRAMEBUFFER_BLIT    0
@@ -66,7 +67,7 @@ extern "C" {
 #define glUniform1i(...) ((void)0)
 #define glActiveTexture(...) ((void)0)
 #define glUniform2fv(...) ((void)0)
-#define glBlendEquationSeparate(...) ((void)0)
+#define glBlendEquationSeparate(rgb, a) glBlendEquation(rgb)
 #define glEnableVertexAttribArray(...) ((void)0)
 #define glVertexAttribPointer(...) ((void)0)
 #endif
@@ -402,13 +403,13 @@ int GR_InitialiseGLExt()
 	
 	const char* rend = (const char*)glGetString(GL_RENDERER);
 	const char* vendor = (const char*)glGetString(GL_VENDOR);
-	eprintf("*Video adapter: %s by %s\n", rend, vendor);
+	eprintf("*Video adapter: %s by %s\n", rend ? rend : "PSP GE", vendor ? vendor : "Sony");
 
 	const char* versionStr = (const char*)glGetString(GL_VERSION);
-	eprintf("*OpenGL version: %s\n", versionStr);
+	eprintf("*OpenGL version: %s\n", versionStr ? versionStr : "1.3");
 
 	const char* glslVersionStr = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-	eprintf("*GLSL version: %s\n", glslVersionStr);
+	eprintf("*GLSL version: %s\n", glslVersionStr ? glslVersionStr : "none");
 
 	return 1;
 }
@@ -724,6 +725,9 @@ const char* gpu_shader_32_rgba =
 
 int GR_Shader_CheckShaderStatus(GLuint shader)
 {
+#if defined(PSP) || defined(__PSP__)
+	return 1;
+#else
 	char info[1024];
 	GLint result;
 
@@ -740,10 +744,14 @@ int GR_Shader_CheckShaderStatus(GLuint shader)
 	}
 
 	return 0;
+#endif
 }
 
 int GR_Shader_CheckProgramStatus(GLuint program)
 {
+#if defined(PSP) || defined(__PSP__)
+	return 1;
+#else
 	char info[1024];
 	GLint result;
 
@@ -760,10 +768,15 @@ int GR_Shader_CheckProgramStatus(GLuint program)
 	}
 
 	return 0;
+#endif
 }
 
 ShaderID GR_Shader_Compile(const char* source, int isPsxShader)
 {
+#if defined(PSP) || defined(__PSP__)
+	static int s_dummyShaderId = 1;
+	return s_dummyShaderId++;
+#else
 #if defined(ES2_SHADERS)
 	const char* GLSL_HEADER_VERT = R"(
 		#version 100
@@ -902,6 +915,7 @@ ShaderID GR_Shader_Compile(const char* source, int isPsxShader)
 	glUseProgram(0);
 
 	return program;
+#endif
 }
 #else
 #error
@@ -1005,13 +1019,16 @@ int GR_InitialisePSX()
 	SDL_memset(vram, 0, VRAM_WIDTH * VRAM_HEIGHT * sizeof(unsigned short));
 	GR_InitRG8LUT();
 	GR_GenerateCommonTextures();
+#if !defined(PSP) && !defined(__PSP__)
 	GR_InitialisePSXShaders();
+#endif
 
 #if USE_OPENGL
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
+#if !defined(PSP) && !defined(__PSP__)
 	// gen framebuffer
 	{
 		memset(&g_glFramebufferPBO, 0, sizeof(g_glFramebufferPBO));
@@ -1128,6 +1145,16 @@ int GR_InitialisePSX()
 		glBindVertexArray(0);
 	}
 #else
+	// PSP fixed-function initialization
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glShadeModel(GL_SMOOTH);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+#endif
+#else
 #error
 #endif
 
@@ -1157,8 +1184,14 @@ void GR_Ortho2D(float left, float right, float bottom, float top, float znear, f
 		x, y, z, 1
 	};
 
-#if USE_OPENGL
+#if USE_OPENGL && !defined(PSP) && !defined(__PSP__)
 	glUniformMatrix4fv(u_projectionLoc, 1, GL_FALSE, ortho);
+#endif
+#if defined(PSP) || defined(__PSP__)
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(ortho);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 #endif
 }
 
@@ -1178,8 +1211,14 @@ void GR_Perspective3D(const float fov, const float width, const float height, co
 		0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0
 	};
 
-#if USE_OPENGL
+#if USE_OPENGL && !defined(PSP) && !defined(__PSP__)
 	glUniformMatrix4fv(u_projection3DLoc, 1, GL_FALSE, persp);
+#endif
+#if defined(PSP) || defined(__PSP__)
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(persp);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 #endif
 }
 
@@ -1279,6 +1318,24 @@ void GR_SetShader(const ShaderID shader)
 
 void GR_SetTexture(TextureID texture, TexFormat texFormat)
 {
+#if defined(PSP) || defined(__PSP__)
+	if (g_dbg_texturelessMode) {
+		texture = g_whiteTexture;
+	}
+
+	if (texture == g_whiteTexture || texture == (TextureID)-1 || texture == 0)
+	{
+		glDisable(GL_TEXTURE_2D);
+	}
+	else
+	{
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	}
+	g_lastBoundTexture = texture;
+	return;
+#else
 	GLint texLoc = 0;
 	GLint lutLoc = 0;
 	GLint bilinearFilterLoc = 0;
@@ -1347,6 +1404,7 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 #endif
 
 	g_lastBoundTexture = texture;
+#endif
 }
 
 void GR_SetOverrideTextureSize(int width, int height)
@@ -1565,7 +1623,7 @@ void GR_SetOffscreenState(const RECT16* offscreenRect, int enable)
 
 	g_PreviousOffscreenState = enable;
 
-#if USE_OPENGL
+#if USE_OPENGL && !defined(PSP) && !defined(__PSP__)
 	if (enable)
 	{
 		// set storage size first
@@ -1633,7 +1691,7 @@ void GR_SetOffscreenState(const RECT16* offscreenRect, int enable)
 
 void GR_StoreFrameBuffer(int x, int y, int w, int h)
 {
-#if USE_OPENGL
+#if USE_OPENGL && !defined(PSP) && !defined(__PSP__)
 	// set storage size first
 	if (g_PreviousFramebuffer.w != w ||
 		g_PreviousFramebuffer.h != h)
@@ -1733,7 +1791,7 @@ void GR_UpdateVRAM()
 
 	vram_need_update = 0;
 
-#if USE_OPENGL
+#if USE_OPENGL && !defined(PSP) && !defined(__PSP__)
 	g_vramTexture = g_vramTexturesDouble[g_vramTextureIdx];
 	g_vramTextureIdx++;
 	g_vramTextureIdx &= 1;
@@ -1873,7 +1931,9 @@ void GR_SetWireframe(int enable)
 
 void GR_BindVertexBuffer()
 {
-#if USE_OPENGL
+#if defined(PSP) || defined(__PSP__)
+	// On PSP client arrays are configured directly in GR_UpdateVertexBuffer
+#elif USE_OPENGL
 	glBindVertexArray(g_glVertexArray[g_curVertexBuffer]);
 
 	glEnableVertexAttribArray(a_position);
@@ -1909,9 +1969,19 @@ void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 	}
 
 	//assert(num_vertices <= MAX_VERTEX_BUFFER_SIZE);
-	GR_BindVertexBuffer();
 
-#if USE_OPENGL
+#if defined(PSP) || defined(__PSP__)
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
+	glVertexPointer(2, GL_SHORT, sizeof(GrVertex), &vertices->x);
+	glTexCoordPointer(2, GL_BYTE, sizeof(GrVertex), &vertices->u);
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(GrVertex), &vertices->r);
+
+	sceKernelDcacheWritebackRange((const void*)vertices, num_vertices * sizeof(GrVertex));
+#elif USE_OPENGL
+	GR_BindVertexBuffer();
 	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GrVertex), vertices);
 #else
 #error

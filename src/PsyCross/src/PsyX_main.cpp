@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #if defined(PSP) || defined(__PSP__)
+#include <pspkernel.h>
 #include <SDL2/SDL.h>
 #else
 #include <SDL.h>
@@ -165,6 +166,9 @@ int PsyX_Sys_GetVBlankCount()
 
 int intrThreadMain(void* data)
 {
+#if defined(PSP) || defined(__PSP__)
+	sceKernelChangeThreadPriority(sceKernelGetThreadId(), 0x12);
+#endif
 	Util_InitHPCTimer(&g_vblTimer);
 
 	while (!g_stopIntrThread)
@@ -188,6 +192,14 @@ int intrThreadMain(void* data)
 			
 				Util_GetHPCTime(&g_vblTimer, 1);
 			}
+			else
+			{
+#if defined(PSP) || defined(__PSP__)
+				sceKernelDelayThread(1000);
+#else
+				SDL_Delay(1);
+#endif
+			}
 			
 		}
 	}
@@ -200,19 +212,18 @@ static int PsyX_Sys_InitialiseCore()
 #ifdef __EMSCRIPTEN__
 	Util_InitHPCTimer(&g_vblTimer);
 #else
+	g_intrMutex = SDL_CreateMutex();
+	if (NULL == g_intrMutex)
+	{
+		eprinterr("SDL_CreateMutex failed: %s\n", SDL_GetError());
+		return 0;
+	}
 
 	g_intrThread = SDL_CreateThread(intrThreadMain, "psyX_intr", NULL);
 
 	if (NULL == g_intrThread)
 	{
 		eprinterr("SDL_CreateThread failed: %s\n", SDL_GetError());
-		return 0;
-	}
-	
-	g_intrMutex = SDL_CreateMutex();
-	if (NULL == g_intrMutex)
-	{
-		eprinterr("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return 0;
 	}
 #endif
@@ -548,10 +559,14 @@ void PrintMessageToOutput(SpewType_t spewtype, char const* pMsgFormat, va_list a
 	}
 #else
 	printf(pTempBuffer);
+	fflush(stdout);
 #endif
 
 	if(g_logStream)
+	{
 		fprintf(g_logStream, pTempBuffer);
+		fflush(g_logStream);
+	}
 }
 
 void PsyX_Log(const char* fmt, ...)
@@ -999,7 +1014,9 @@ void PsyX_WaitForTimestep(int count)
 		int vbl;
 		do
 		{
-#ifdef __EMSCRIPTEN__
+#if defined(PSP) || defined(__PSP__)
+			sceKernelDelayThread(1000);
+#elif defined(__EMSCRIPTEN__)
 			emscripten_sleep(0);
 #endif
 			vbl = PsyX_Sys_GetVBlankCount();

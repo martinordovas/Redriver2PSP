@@ -1879,12 +1879,14 @@ int redriver2_main(int argc, char** argv)
 	InitStringMng();
 	
 #endif
+#if !defined(PSP) && !defined(__PSP__)
 	{
 		//PlayFMV(99);	// [A] don't show publisher logo
 
 		ShowHiresScreens(ScreenNames, 300, 0); // [A]
 		PlayFMV(0);		// play intro movie
 	}
+#endif
 
 	CheckForCorrectDisc(0);
 	

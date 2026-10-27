@@ -16,7 +16,7 @@
 #include "draw.h"
 #include "pause.h"
 
-char gDataFolder[32] = "DRIVER2\\";
+char gDataFolder[32] = "data/DRIVER2/";
 
 #ifdef PSX
 
@@ -257,7 +257,7 @@ int Loadfile(char* name, char* addr)
 {
 	int nread;
 	unsigned char res[8];
-	char namebuffer[64];
+	char namebuffer[128];
 
 #if USE_PC_FILESYSTEM
 	int fileSize;
@@ -266,6 +266,12 @@ int Loadfile(char* name, char* addr)
 	FS_FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
+	if (!fptr && strncmp(gDataFolder, "data/", 5) == 0)
+	{
+		sprintf(namebuffer, "%s%s", gDataFolder + 5, name);
+		FS_FixPathSlashes(namebuffer);
+		fptr = fopen(namebuffer, "rb");
+	}
 	if (fptr)
 	{
 		fseek(fptr, 0, SEEK_END);
@@ -300,6 +306,12 @@ int FileExists(char* filename)
 	FS_FixPathSlashes(namebuffer);
 
 	FILE* fp = fopen(namebuffer, "rb");
+	if (!fp && strncmp(gDataFolder, "data/", 5) == 0)
+	{
+		sprintf(namebuffer, "%s%s", gDataFolder + 5, filename);
+		FS_FixPathSlashes(namebuffer);
+		fp = fopen(namebuffer, "rb");
+	}
 	if (fp)
 	{
 		fclose(fp);
@@ -311,7 +323,7 @@ int FileExists(char* filename)
 	int retries;
 	CdlFILE cdfile;
 
-	sprintf(namebuffer, "\\%s%s;1", gDataFolder, filename);
+	sprintf(namebuffer, "\\DRIVER2\\%s;1", filename);
 
 #ifdef PSX
 	retries = 9;
@@ -328,6 +340,10 @@ int FileExists(char* filename)
 	// don't retry or we'll have problems
 	if(CdSearchFile(&cdfile, namebuffer) != NULL)
 		return 1;
+
+	sprintf(namebuffer, "\\%s;1", filename);
+	if(CdSearchFile(&cdfile, namebuffer) != NULL)
+		return 1;
 #endif
 	
 #endif // USE_CD_FILESYSTEM
@@ -339,7 +355,7 @@ int FileExists(char* filename)
 // [D] [T]
 int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 {
-	char namebuffer[64];
+	char namebuffer[128];
 
 #if USE_PC_FILESYSTEM
 	int fileSize;
@@ -348,6 +364,12 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	FS_FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
+	if (!fptr && strncmp(gDataFolder, "data/", 5) == 0)
+	{
+		sprintf(namebuffer, "%s%s", gDataFolder + 5, name);
+		FS_FixPathSlashes(namebuffer);
+		fptr = fopen(namebuffer, "rb");
+	}
 	if (fptr)
 	{
 		fseek(fptr, 0, SEEK_END);
@@ -377,15 +399,20 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	char sectorbuffer[CDSECTOR_SIZE];
 	CdlLOC pos;
 
-	sprintf(namebuffer, "\\%s%s;1", gDataFolder, name);
+	sprintf(namebuffer, "\\DRIVER2\\%s;1", name);
 
 	if (strcmp(currentfilename, namebuffer) != 0)
 	{
 		strcpy(currentfilename, namebuffer);
 
-		while (CdSearchFile(&currentfileinfo, namebuffer) == NULL)
+		if (CdSearchFile(&currentfileinfo, namebuffer) == NULL)
 		{
-			DoCDRetry();
+			sprintf(namebuffer, "\\%s;1", name);
+			strcpy(currentfilename, namebuffer);
+			while (CdSearchFile(&currentfileinfo, namebuffer) == NULL)
+			{
+				DoCDRetry();
+			}
 		}
 	}
 
@@ -931,20 +958,20 @@ void SetCityType(CITYTYPE type)
 	switch (type)
 	{
 		case CITYTYPE_NIGHT:
-			format = "\\%sN%s;1";
+			format = "\\DRIVER2\\N%s;1";
 			break;
 		case CITYTYPE_MULTI_DAY:
-			format = "\\%sM%s;1";
+			format = "\\DRIVER2\\M%s;1";
 			break;
 		case CITYTYPE_MULTI_NIGHT:
-			format = "\\%sMN%s;1";
+			format = "\\DRIVER2\\MN%s;1";
 			break;
 		default:
-			format = "\\%s%s;1";
+			format = "\\DRIVER2\\%s;1";
 			break;
 	}
 
-	sprintf(filename, format, gDataFolder, LevelFiles[GameLevel]);
+	sprintf(filename, format, LevelFiles[GameLevel]);
 
 	while (CdSearchFile(&cdfile, filename) == NULL)
 	{

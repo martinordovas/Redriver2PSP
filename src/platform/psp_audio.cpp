@@ -5,11 +5,10 @@
 extern "C" {
 void psp_audio_init(void)
 {
-	pspAudioInit();
+	// OpenAL handles audio directly via sceAudio
 }
 
 void psp_audio_shutdown(void)
 {
-	pspAudioEnd();
 }
 }

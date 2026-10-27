@@ -33,8 +33,14 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 		fread(palette, sizeof(palette), 1, fp);
 
 	// Read the file data
-	fBuffer = (u_char*)malloc(size - sizeof(header) - palLength);
-	fread(fBuffer, size - sizeof(header) - palLength, 1, fp);
+	int fileDataSize = size - sizeof(header) - palLength;
+	fBuffer = (u_char*)malloc(fileDataSize);
+	if (!fBuffer)
+	{
+		fclose(fp);
+		return false;
+	}
+	fread(fBuffer, fileDataSize, 1, fp);
 	fclose(fp);
 
 	size = width * height * pixelSize;
@@ -45,6 +51,11 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 		uint c, count;
 
 		tempBuffer = (u_char*)malloc(size);
+		if (!tempBuffer)
+		{
+			free(fBuffer);
+			return false;
+		}
 
 		dest = tempBuffer;
 		src = fBuffer;

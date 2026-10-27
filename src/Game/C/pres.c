@@ -11,7 +11,9 @@ extern int gShowMap;
 #include "../utils/targa.h"
 #include "../utils/hqfont.h"
 
+#if !defined(PSX) && !defined(PSP)
 #define HIRES_FONTS
+#endif
 
 struct FONT_QUAD
 {

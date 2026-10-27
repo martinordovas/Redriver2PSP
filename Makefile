@@ -23,7 +23,7 @@ PLATFORM_OBJS = src/platform/psp_main.o \
 OBJS = $(PLATFORM_OBJS) $(GAME_OBJS) $(PSYCROSS_OBJS) $(UTILS_OBJS)
 
 INCDIR = src src/Game src/PsyCross/include src/PsyCross/include/psx src/PsyCross/src src/utils /opt/pspdev/psp/include/SDL2
-CFLAGS = -O3 -G0 -Wall -Wno-narrowing -DPSP -DNG_PSP
+CFLAGS = -O3 -G0 -Wall -Wno-narrowing -DPSP -DNG_PSP -DNTSC_VERSION
 CXXFLAGS = $(CFLAGS) -std=c++11 -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
 

@@ -9,6 +9,7 @@
 #include <cstdlib>
 
 #if defined(PSP) || defined(__PSP__)
+#include <pspctrl.h>
 #define SDL_GameController void
 #define SDL_GameControllerAxis int
 #define SDL_GameControllerButton int
@@ -16,7 +17,10 @@
 #define Uint16 uint16_t
 #define SDL_InitSubSystem(flags) 0
 #define SDL_QuitSubSystem(flags) ((void)0)
+#undef SDL_GameControllerAddMappingsFromFile
 #define SDL_GameControllerAddMappingsFromFile(file) ((void)0)
+#undef SDL_GameControllerRumble
+#define SDL_GameControllerRumble(...) 0
 #define SDL_NumJoysticks() 0
 #define SDL_NumHaptics() 0
 #define SDL_IsGameController(i) 0
@@ -308,6 +312,44 @@ void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, LPPADRAW pad)
 {
 	short leftX, leftY, rightX, rightY;
 	u_short ret = 0xFFFF;
+
+#if defined(PSP) || defined(__PSP__)
+	SceCtrlData pspPad;
+	sceCtrlReadBufferPositive(&pspPad, 1);
+
+	if (pspPad.Buttons & PSP_CTRL_SQUARE)
+		ret &= ~0x8000;
+	if (pspPad.Buttons & PSP_CTRL_CIRCLE)
+		ret &= ~0x2000;
+	if (pspPad.Buttons & PSP_CTRL_TRIANGLE)
+		ret &= ~0x1000;
+	if (pspPad.Buttons & PSP_CTRL_CROSS)
+		ret &= ~0x4000;
+	if (pspPad.Buttons & PSP_CTRL_LTRIGGER)
+		ret &= ~0x400; // L1
+	if (pspPad.Buttons & PSP_CTRL_RTRIGGER)
+		ret &= ~0x800; // R1
+	if (pspPad.Buttons & PSP_CTRL_UP)
+		ret &= ~0x10;
+	if (pspPad.Buttons & PSP_CTRL_DOWN)
+		ret &= ~0x40;
+	if (pspPad.Buttons & PSP_CTRL_LEFT)
+		ret &= ~0x80;
+	if (pspPad.Buttons & PSP_CTRL_RIGHT)
+		ret &= ~0x20;
+	if (pspPad.Buttons & PSP_CTRL_SELECT)
+		ret &= ~0x1;
+	if (pspPad.Buttons & PSP_CTRL_START)
+		ret &= ~0x8;
+
+	pad->analog[0] = pspPad.Lx;
+	pad->analog[1] = pspPad.Ly;
+	pad->analog[2] = 127;
+	pad->analog[3] = 127;
+
+	*(u_short*)pad->buttons = ret;
+	return;
+#endif
 
 	if (!cont)
 	{

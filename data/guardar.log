@@ -1,0 +1,13 @@
+jPSXdec: decodificador multimedia de PSX (no comercial) v1.05 (beta)
+Linux 7.2.6-1-cachyos
+Java 25.0.4.1
+27 oct 2026, 18:58:25
+[INFORMACIÓN] Filename:./install/Driver2CD2.bin|Sector size:2352|Sector count:256319|First sector offset:0
+[INFORMACIÓN] #:391|ID:DRIVER2/FMV/0/RENDER0.STR[0]|Sectors:67062-77646|Type:Video|Dimensions:320x176|Frame Count:2117|Sector Frames:67062-77642|Sectors/Frame:5/1|1st frame end sector:4|Disc Speed:2|Header Frames:1-2117
+[INFORMACIÓN] Formato de vídeo: AVI: Comprimido (MJPG)
+[INFORMACIÓN] Dimensiones: 320x176
+[INFORMACIÓN] Velocidad de disco: 2x (30 fps)
+[INFORMACIÓN] Con elemento(s) de audio:
+[INFORMACIÓN] #:392|ID:DRIVER2/FMV/0/RENDER0.STR[0.0]|Sectors:67077-77653|Type:XA|File:1|Channel:1|Stereo?:Yes|Samples/Sec:18900|Bits/Sample:4|Sector stride:16|Disc speed:2x
+[INFORMACIÓN] Emular sincronía audio/vídeo de PSX: No
+[INFORMACIÓN] Guardando como DRIVER2/FMV/0/RENDER0.STR[0].avi
