@@ -1,11 +1,11 @@
 # Redriver2PSP
 
-Port completo de **Redriver2** (la versión de PC basada en ingeniería inversa de Driver 2 de PSX) a la **PlayStation Portable (PSP)**.
+Complete port of **Redriver2** (the reverse-engineered PC version of Driver 2 for PlayStation) to the **PlayStation Portable (PSP)**.
 
-Consulta la **[Guía de Portabilidad (PORTING_GUIDE.md)](PORTING_GUIDE.md)** para ver el análisis detallado del repositorio base (`REDRIVER2`), los retos técnicos, los pasos a seguir y la esquemática de la estructura del proyecto.
+Consult the **[Porting Guide (PORTING_GUIDE.md)](PORTING_GUIDE.md)** and **[Roadmap (ROADMAP.md)](ROADMAP.md)** for detailed technical analysis, challenges, architecture, and instructions.
 
-## Estructura del Proyecto
-- `src/`: Código fuente del juego (`Game/`, `PsyCross/`, `utils/` y `platform/PSP/`).
-- `sce_sys/`: Metadatos de la aplicación PSP (`PARAM.SFO`, iconos).
-- `data/`: Recursos del juego (`Driver 2`).
-- `Makefile`: Sistema de compilación para PSPSDK.
+## Project Structure
+- `src/`: Game source code (`Game/`, `PsyCross/`, `utils/`, and `platform/`).
+- `sce_sys/`: PSP application metadata (`PARAM.SFO`, icons).
+- `data/`: Game assets (`Driver 2` extracted disc data).
+- `Makefile`: PSPSDK build system configuration.

@@ -1,66 +1,66 @@
-# Roadmap del Port a PSP: Redriver2 (Versión PC)
+# PSP Port Roadmap: Redriver2 (PC Version)
 
-Este documento detalla el mapa de ruta y la separación arquitectónica entre la lógica pura reutilizable y la capa de plataforma específica para realizar el port de **Redriver2** a **PlayStation Portable (PSP)** en el directorio `REDRIVER2PSP/Redriver2PSP/`.
+This document details the roadmap and architectural separation between pure reusable logic and the platform-specific layer to port **Redriver2** to **PlayStation Portable (PSP)** in the `REDRIVER2PSP/Redriver2PSP/` directory.
 
 ---
 
-## 1. Mapa Detallado de Arquitectura
+## 1. Detailed Architecture Map
 
-### Bloque A: Puro Código y Lógica (100% Reutilizable)
-*Código fuente del motor reverse-engineered de PC (`REDRIVER2/src_rebuild/`). No requiere reescribir la lógica de juego.*
+### Block A: Pure Code & Logic (100% Reusable)
+*Source code of the reverse-engineered PC engine (`REDRIVER2/src_rebuild/`). Game logic requires no rewriting.*
 
-1. **`src/Game/C/` (Lógica de Juego, Físicas e IA)**
-   - Físicas y manejo vehicular (`handling.c`, `car.c`, `physics.c`).
-   - Detección de colisiones (`bcollide.c`, `colliding.c`).
-   - Inteligencia artificial de enemigos, policías y tráfico (`ai.c`, `cop_ai.c`, `ped.c`).
-   - Gestión de misiones y juego (`mission.c`, `game.c`, etc.).
-2. **`src/Game/engine/` (Motor de Renderizado y Celdas)**
-   - Streaming y carga de celdas del mundo abierto (`cell.c`).
-   - Modelos 3D y geometría (`mdl.h`).
-3. **`src/Game/Frontend/` (Interfaz de Usuario)**
-   - Menús principales, pantallas de carga y HUD (`FEmain.c`, `FEscreens.inc`).
-4. **`src/Game/` (Estructuras y Matemáticas Base)**
+1. **`src/Game/C/` (Game Logic, Physics & AI)**
+   - Physics and vehicle handling (`handling.c`, `car.c`, `physics.c`).
+   - Collision detection (`bcollide.c`, `colliding.c`).
+   - AI for enemies, police, and traffic (`ai.c`, `cop_ai.c`, `ped.c`).
+   - Mission and game management (`mission.c`, `game.c`, etc.).
+2. **`src/Game/engine/` (Rendering Engine & Cells)**
+   - Streaming and loading open-world map cells (`cell.c`).
+   - 3D models and geometry (`mdl.h`).
+3. **`src/Game/Frontend/` (User Interface)**
+   - Main menus, loading screens, and HUD (`FEmain.c`, `FEscreens.inc`).
+4. **`src/Game/` (Structures & Base Math)**
    - `driver2.h`, `dr2types.h`, `dr2math.h`, `dr2limits.h`, `dr2locale.c`.
-5. **`src/PsyCross/` (Emulación de Hardware PSX / GTE)**
-   - Capa de abstracción y matemáticas de transformación geométrica de PSX (GTE).
+5. **`src/PsyCross/` (PSX Hardware Emulation / GTE)**
+   - Abstraction layer and PSX geometric transformation mathematics (GTE).
 
 ---
 
-### Bloque B: Capa de Plataforma y Adaptación (Diseño y Desarrollo Específico para PSP)
-*Módulos que deben implementarse para conectar el motor con el hardware y APIs de la PSP vía **PSPSDK**.*
+### Block B: Platform & Adaptation Layer (PSP Specific Design & Development)
+*Modules implemented to connect the engine with PSP hardware and APIs via **PSPSDK**.*
 
-1. **Punto de Entrada y Ciclo de Vida (`src/platform/psp_main.cpp`)**
-   - Inicialización del SDK de PSP (`pspDebugScreenInit`, callbacks de salida por HOME).
-   - Bucle principal de ejecución.
-2. **Sistema Gráfico y Backend de Renderizado (`src/platform/psp_video.cpp` + PsyCross)**
-   - Inicialización de **PSP GU** (`sceGuInit`, buffers en VRAM, doble búfer).
-   - Traducción de primitivas gráficas a operaciones geométricas de la PSP (`sceGum`, `sceGuDrawArray`).
-3. **Sistema de Control / Entrada (`src/platform/psp_input.cpp`)**
-   - Lectura del pad de PSP mediante `sceCtrlReadBufferPositive`.
-   - Mapeo de botones analógicos y digitales a las acciones de Driver 2.
-4. **Sistema de Sonido (`src/platform/psp_audio.cpp`)**
-   - Inicialización del subsistema de audio nativo mediante **`pspaudiolib`** / `sceAudio`.
-   - Envío de buffers PCM para efectos de sonido y música.
-5. **Sistema de Archivos y E/S (`src/utils/fs.cpp`)**
-   - Adaptación de rutas de archivos para acceso a la Memory Stick de la PSP (`ms0:/PSP/GAME/Redriver2PSP/data/` o rutas relativas).
-6. **Sistema de Compilación y Metadatos (`Makefile` y `sce_sys/`)**
-   - **`Makefile`**: Configurado con PSPSDK, optimizaciones `-O3 -G0`, y enlace de librerías (`-lpspgu -lpspgum -lpspaudio -lm -lc -lstdc++`).
-   - **`sce_sys/`**: Metadatos del menú XMB (`PARAM.SFO`, `ICON0.PNG`, `PIC0.PNG`).
-
----
-
-### Bloque C: Gestión de Activos y Imágenes de Disco (Assets)
-* **Requisito de Datos**: Se requieren los archivos extraídos y convertidos de los discos de PlayStation (Disc 1 y Disc 2) mediante las herramientas de conversión de REDRIVER2 (`_convert_cd_fmv_xa.sh` y `jpsxdec`) para poblar la carpeta `data/DRIVER2/` (`DATA`, `GFX`, `LANG`, `REPLAYS`, `XA`).
+1. **Entry Point & Lifecycle (`src/platform/psp_main.cpp`)**
+   - PSP SDK initialization (`pspDebugScreenInit`, HOME exit callbacks).
+   - Main execution loop.
+2. **Graphics System & Rendering Backend (`src/platform/psp_video.cpp` + PsyCross)**
+   - **PSP GU** initialization (`sceGuInit`, VRAM buffers, double buffering).
+   - Translation of graphic primitives to PSP geometry operations (`sceGum`, `sceGuDrawArray`).
+3. **Control / Input System (`src/platform/psp_input.cpp`)**
+   - Reading PSP pad via `sceCtrlReadBufferPositive`.
+   - Mapping analog and digital buttons to Driver 2 actions.
+4. **Sound System (`src/platform/psp_audio.cpp`)**
+   - Native audio subsystem initialization via **`pspaudiolib`** / `sceAudio`.
+   - Feeding PCM buffers for sound effects and music.
+5. **File System & I/O (`src/utils/fs.cpp`)**
+   - File path adaptation for PSP Memory Stick access (`ms0:/PSP/GAME/Redriver2PSP/data/` or relative paths).
+6. **Build System & Metadata (`Makefile` and `sce_sys/`)**
+   - **`Makefile`**: Configured with PSPSDK, `-O3 -G0` optimizations, and library linking (`-lpspgu -lpspgum -lpspaudiolib -lpspaudio -lm -lc -lstdc++`).
+   - **`sce_sys/`**: XMB menu metadata (`PARAM.SFO`, `ICON0.PNG`, `PIC0.PNG`).
 
 ---
 
-## 2. Plan de Trabajo (Fases)
+### Block C: Asset Management & Disc Images
+* **Data Requirement**: Extracted and converted PlayStation disc files (Disc 1 and Disc 2) using REDRIVER2 conversion tools (`_convert_cd_fmv_xa.sh` and `jpsxdec`) are required to populate the `data/DRIVER2/` directory (`DATA`, `GFX`, `LANG`, `REPLAYS`, `XA`).
 
-- [ ] **Fase 1: Sincronización de Código y Estructura Base**
-  - Creación de directorios y copia de ficheros desde `REDRIVER2/src_rebuild/` a `src/`.
-- [ ] **Fase 2: Implementación de la Capa de Plataforma PSP**
-  - Desarrollo de `PSPPlatform.h`, `psp_main.cpp`, `psp_video.cpp`, `psp_input.cpp` y `psp_audio.cpp`.
-- [ ] **Fase 3: Configuración del Makefile y Compilación Cruzada**
-  - Creación del `Makefile` con PSPSDK y verificación de compilación del `EBOOT.PBP`.
-- [ ] **Fase 4: Empaquetado, Activos y Pruebas**
-  - Integración de recursos (`data/`), pruebas en emulador (PPSSPP) y validación en hardware real.
+---
+
+## 2. Work Plan (Phases)
+
+- [x] **Phase 1: Code Synchronization & Base Structure**
+  - Directory creation and file copying from `REDRIVER2/src_rebuild/` to `src/`.
+- [x] **Phase 2: PSP Platform Layer Implementation**
+  - Development of `PSPPlatform.h`, `psp_main.cpp`, `psp_video.cpp`, `psp_input.cpp`, and `psp_audio.cpp`.
+- [x] **Phase 3: Makefile Configuration & Cross-Compilation**
+  - Creation of PSPSDK `Makefile` and verification of `EBOOT.PBP` compilation.
+- [ ] **Phase 4: Packaging, Assets & Testing**
+  - Resource integration (`data/`), emulator testing (PPSSPP), and validation on real hardware.
